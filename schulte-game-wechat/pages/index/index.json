@@ -1,0 +1,9 @@
+{
+    "usingComponents": {},
+    "navigationBarTitleText": "舒尔特方格",
+    "navigationBarBackgroundColor": "#0F172A",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0F172A",
+    "backgroundTextStyle": "light",
+    "enablePullDownRefresh": false
+}

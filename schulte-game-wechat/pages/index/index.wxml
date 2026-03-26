@@ -1,0 +1,271 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 用户名设置界面 -->
+  <view id="nameScreen" class="screen {{currentScreen === 'name' ? 'active' : ''}}">
+    <view class="name-content">
+      <view class="logo-icon">👋</view>
+      <view class="name-title">修改昵称</view>
+      <view class="name-subtitle">好的昵称能带来好运气</view>
+      <input 
+        class="name-input" 
+        placeholder="请输入昵称" 
+        maxlength="12"
+        value="{{playerNameInput}}"
+        bindinput="onNameInput"
+        bindconfirm="saveName"
+      />
+      <button class="primary-btn" bindtap="saveName">保存</button>
+      <button class="secondary-btn" style="width: 100%;" bindtap="cancelNameEdit">返回</button>
+    </view>
+  </view>
+
+  <!-- 游戏介绍界面 -->
+  <view id="introScreen" class="screen {{currentScreen === 'intro' ? 'active' : ''}}">
+    <view class="intro-content">
+      <view class="intro-header">
+        <view class="intro-title">舒尔特方格</view>
+        <view class="intro-tag">专注力训练神器</view>
+      </view>
+
+      <view class="intro-demo">
+        <view class="demo-grid">
+          <view class="demo-cell">4</view>
+          <view class="demo-cell">1</view>
+          <view class="demo-cell">3</view>
+          <view class="demo-cell">2</view>
+          <view class="cursor-hand">👆</view>
+        </view>
+      </view>
+
+      <view class="intro-rules">
+        <view class="rule-item">👁️ <text class="bold">规则很简单：</text></view>
+        <view class="rule-item">1. 眼睛注视最中间</view>
+        <view class="rule-item">2. 用余光快速寻找数字</view>
+        <view class="rule-item">3. 按 <text class="bold">1 ➡ 2 ➡ 3...</text> 的顺序点击</view>
+        <view class="rule-item">⏱️ <text class="bold">用时越短，注意力越强！</text></view>
+      </view>
+
+      <button class="primary-btn" bindtap="startTrial">我明白了，试玩一下</button>
+    </view>
+  </view>
+
+  <!-- 试玩教程界面 -->
+  <view id="tutorialScreen" class="screen {{currentScreen === 'tutorial' ? 'active' : ''}}">
+    <view class="tutorial-content">
+      <view class="tutorial-icon">💡</view>
+      <view class="tutorial-timer">{{tutorialTimer}}</view>
+      <view class="tutorial-hint">请按顺序点击 1 → 2 → 3 ...</view>
+      
+      <view class="tutorial-demo-container">
+        <view class="game-grid tutorial-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <view 
+            wx:for="{{tutorialNumbers}}" 
+            wx:key="index"
+            class="grid-cell {{item.found ? 'found' : ''}} {{item.wrong ? 'wrong' : ''}}"
+            bindtouchstart="handleTutorialClick"
+            data-number="{{item.value}}"
+            data-index="{{index}}"
+          >
+            {{item.value}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主菜单界面 -->
+  <view id="startScreen" class="screen {{currentScreen === 'start' ? 'active' : ''}}">
+    <view class="logo">
+      <view class="logo-icon">🧠</view>
+      <view class="title">舒尔特方格</view>
+      <view class="player-profile" bindtap="editName">
+        <text class="player-name-text">你好，{{playerName}}</text>
+        <text class="edit-hint">✎ 修改</text>
+      </view>
+    </view>
+
+    <view class="difficulty-selector">
+      <view class="section-title">选择难度</view>
+      <view class="difficulty-buttons">
+        <view 
+          wx:for="{{difficulties}}" 
+          wx:key="size"
+          class="difficulty-btn {{gridSize === item.size ? 'active' : ''}}"
+          bindtap="selectDifficulty"
+          data-size="{{item.size}}"
+        >
+          <view class="diff-label">{{item.label}}</view>
+          <view class="diff-size">{{item.size}}×{{item.size}}</view>
+        </view>
+      </view>
+    </view>
+
+    <button class="primary-btn" bindtap="startGame">开始游戏</button>
+    <button class="secondary-btn pk-btn" bindtap="showPKSetup">⚔️ 双人PK模式</button>
+
+    <view class="best-records">
+      <view class="section-title">最佳成绩</view>
+      <view class="records-list">
+        <view wx:if="{{!hasRecords}}" class="no-records">暂无记录</view>
+        <view 
+          wx:for="{{recordsList}}" 
+          wx:key="difficulty"
+          class="record-item"
+        >
+          <view class="record-difficulty">{{item.difficulty}}</view>
+          <view class="record-time">{{item.timeStr}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 游戏界面 -->
+  <view id="gameScreen" class="screen {{currentScreen === 'game' ? 'active' : ''}}">
+    <view class="game-header">
+      <view class="icon-btn" bindtap="backToStart">←</view>
+      <view class="timer-display">
+        <view class="timer-label">{{timerLabel}}</view>
+        <view class="timer">{{gameTimer}}</view>
+      </view>
+      <view class="progress-info">
+        <text class="current-num">{{currentNumber}}</text>
+        <text class="total-num">/ {{totalNumbers}}</text>
+      </view>
+    </view>
+
+    <view class="game-grid" style="grid-template-columns: repeat({{gridSize}}, 1fr);">
+      <view 
+        wx:for="{{gameNumbers}}" 
+        wx:key="index"
+        class="grid-cell {{item.found ? 'found' : ''}} {{item.wrong ? 'wrong' : ''}}"
+        bindtouchstart="handleCellClick"
+        data-number="{{item.value}}"
+        data-index="{{index}}"
+      >
+        {{item.value}}
+      </view>
+    </view>
+
+    <view class="game-controls">
+      <button class="secondary-btn" bindtap="togglePause">{{isPaused ? '继续' : '暂停'}}</button>
+      <button class="secondary-btn" bindtap="resetGame">重新开始</button>
+    </view>
+  </view>
+
+  <!-- 结果界面 -->
+  <view id="resultScreen" class="screen {{currentScreen === 'result' ? 'active' : ''}}">
+    <view class="result-content">
+      <view class="result-icon">🎉</view>
+      
+      <view class="result-header-group">
+        <view class="result-player-name">{{playerName}}</view>
+        <view class="result-psych-title">{{resultTitle}}</view>
+        <view class="result-psych-desc">{{resultDescription}}</view>
+      </view>
+
+      <view class="result-stats">
+        <view class="stat-item">
+          <view class="stat-label">用时</view>
+          <view class="stat-value">{{finalTime}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">难度</view>
+          <view class="stat-value">{{finalDifficulty}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">评级</view>
+          <view class="stat-rank {{finalRank.startsWith('S') ? 'rank-s' : ''}}">{{finalRank}}</view>
+        </view>
+      </view>
+
+      <view class="new-record {{isNewRecord ? '' : 'hidden'}}">✨ 新纪录！</view>
+
+      <view class="result-actions">
+        <button class="primary-btn share-glow-btn" bindtap="shareResult">分享成绩</button>
+        <button class="secondary-btn" bindtap="playAgain">再玩一次</button>
+        <button class="secondary-btn" bindtap="backToStart">返回首页</button>
+      </view>
+    </view>
+
+    <!-- 撒花特效容器 -->
+    <view class="confetti-container" wx:if="{{showConfetti}}">
+      <view wx:for="{{confettiPieces}}" wx:key="id" class="confetti" style="left:{{item.left}}%; background:{{item.color}}; animation-delay:{{item.delay}}s; transform: rotate({{item.angle}}deg);"></view>
+    </view>
+  </view>
+
+  <!-- 隐藏的绘图 Canvas (用于生成分享图) -->
+  <canvas type="2d" id="shareCanvas" class="share-canvas"></canvas>
+
+  <!-- PK设置界面 -->
+  <view id="pkSetupScreen" class="screen {{currentScreen === 'pkSetup' ? 'active' : ''}}">
+    <view class="name-content">
+      <view class="name-title">双人对决 (1v1)</view>
+      <view class="name-subtitle">谁的反应更快？</view>
+
+      <view class="pk-inputs">
+        <input 
+          class="name-input" 
+          placeholder="玩家 1 名字" 
+          maxlength="8"
+          value="{{pkPlayer1}}"
+          bindinput="onPKPlayer1Input"
+        />
+        <view class="vs-text">VS</view>
+        <input 
+          class="name-input" 
+          placeholder="玩家 2 名字" 
+          maxlength="8"
+          value="{{pkPlayer2}}"
+          bindinput="onPKPlayer2Input"
+        />
+      </view>
+
+      <view class="pk-actions">
+        <button class="primary-btn" bindtap="startPKMatch">开始对决</button>
+        <button class="secondary-btn" bindtap="backToStart">返回</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- PK结果界面 -->
+  <view id="pkResultScreen" class="screen {{currentScreen === 'pkResult' ? 'active' : ''}}">
+    <view class="result-content">
+      <view class="result-icon">👑</view>
+      <view class="result-title">获胜者</view>
+
+      <view class="pk-winner-name">{{pkWinnerName}}</view>
+      <view class="result-psych-title">{{pkWinnerTitle}}</view>
+      <view class="pk-winner-time">{{pkWinnerTime}}</view>
+
+      <view class="pk-loser-card">
+        <text class="loser-label">惜败:</text>
+        <text class="loser-name">{{pkLoserName}}</text>
+        <text class="loser-time">{{pkLoserTime}}</text>
+      </view>
+
+      <view class="result-actions">
+        <button class="secondary-btn" bindtap="backToStart">返回主菜单</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- “大脑解毒剂” 科普弹窗 -->
+  <view class="hero-modal-mask {{showHeroModal ? 'active' : ''}}" bindtap="closeHeroModal">
+    <view class="hero-modal-content" catchtap="stopBubble">
+      <view class="hero-modal-header">
+        <view class="hero-modal-icon">🧪</view>
+        <view class="hero-modal-title">大脑“解毒剂”</view>
+      </view>
+      <view class="hero-modal-body">
+        <view class="hero-text-line">感觉思维变钝、无法静心？</view>
+        <view class="hero-text-line">你需要一次大脑“排毒”</view>
+        <view class="hero-text-line intro-break">——————</view>
+        <view class="hero-text-line">强力纠正短视频带来的注意力漂移</view>
+        <view class="hero-text-line">每日几分钟 视觉聚焦训练</view>
+        <view class="hero-text-line">让你告别浮躁 唤醒前额叶神经</view>
+        <view class="hero-text-line">迅速找回 更好的状态！</view>
+      </view>
+      <button class="primary-btn hero-btn" bindtap="closeHeroModal">我知道了</button>
+    </view>
+  </view>
+</view>

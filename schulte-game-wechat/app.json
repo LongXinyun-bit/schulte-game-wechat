@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#0F172A",
+    "navigationBarTitleText": "舒尔特方格",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0F172A"
+  },
+  "sitemapLocation": "sitemap.json"
+}

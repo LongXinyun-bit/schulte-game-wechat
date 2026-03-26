@@ -1,0 +1,21 @@
+/* 全局样式 */
+page {
+  --primary-start: #8B5CF6;
+  --primary-end: #3B82F6;
+  --secondary-start: #10B981;
+  --secondary-end: #06B6D4;
+  --bg-dark: #0F172A;
+  --bg-card: #1E293B;
+  --bg-hover: #334155;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --accent-green: #10B981;
+  --accent-purple: #8B5CF6;
+  --accent-blue: #3B82F6;
+  
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: -apple-system-font, "Helvetica Neue", sans-serif;
+}
+
+
